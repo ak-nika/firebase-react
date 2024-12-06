@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot, orderBy, query } from "firebase/firestore";
 import { colRef } from "../constants";
 import Loader from "./Loader";
 import ImageCard from "./ImageCard";
@@ -9,9 +9,10 @@ const Images = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const q = query(colRef, orderBy("createdAt", "desc"));
     // Set up a real-time listener
     const unsubscribe = onSnapshot(
-      colRef,
+      q,
       (snapshot) => {
         const imagesData = snapshot.docs.map((doc) => ({
           ...doc.data(),
