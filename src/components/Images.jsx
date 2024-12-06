@@ -1,29 +1,33 @@
 import { useEffect, useState } from "react";
-import { getDocs } from "firebase/firestore";
+import { onSnapshot } from "firebase/firestore";
 import { colRef } from "../constants";
 import Loader from "./Loader";
+import ImageCard from "./ImageCard";
 
 const Images = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const data = await getDocs(colRef);
-        const imagesData = data.docs.map((doc) => ({
+    // Set up a real-time listener
+    const unsubscribe = onSnapshot(
+      colRef,
+      (snapshot) => {
+        const imagesData = snapshot.docs.map((doc) => ({
           ...doc.data(),
           id: doc.id,
         }));
         setImages(imagesData);
-      } catch (error) {
-        console.error("Error fetching images:", error);
-      } finally {
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching real-time data:", error);
         setLoading(false);
       }
-    };
+    );
 
-    fetchImages();
+    // Clean up the listener when the component unmounts
+    return () => unsubscribe();
   }, []);
 
   if (loading) {
@@ -31,13 +35,20 @@ const Images = () => {
   }
 
   return (
-    <div>
-      <h2>Images</h2>
-      <ul>
+    <div className="w-full p-8">
+      <h2 className="text-3xl font-bold text-center my-12">Images</h2>
+
+      <div className="grid grid-cols-[repeat(auto-fit,_minmax(300px,_1fr))] gap-4">
         {images.map((image) => (
-          <li key={image.id}>{image.name || "Unnamed Image"}</li>
+          <ImageCard
+            key={image.id}
+            id={image.id}
+            url={image.url}
+            name={image.name}
+            description={image.description}
+          />
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
