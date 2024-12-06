@@ -1,21 +1,19 @@
-import { Suspense, lazy } from "react";
-import Form from "./components/Form";
+import { lazy, Suspense } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Loader from "./components/Loader";
 
-const Images = lazy(() => import("./components/Images"));
+const EditForm = lazy(() => import("./components/EditForm"));
+const Home = lazy(() => import("./components/Home"));
 
 export default function App() {
   return (
-    <>
-      <h1 className="text-3xl font-bold text-center my-4">
-        Firebase with React
-      </h1>
-
-      <Form />
-
+    <Router>
       <Suspense fallback={<Loader />}>
-        <Images />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/edit/:id" element={<EditForm />} />
+        </Routes>
       </Suspense>
-    </>
+    </Router>
   );
 }

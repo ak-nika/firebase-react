@@ -47,6 +47,7 @@ const Images = () => {
             url={image.url}
             name={image.name}
             description={image.description}
+            author={image.author}
           />
         ))}
       </div>

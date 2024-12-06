@@ -68,6 +68,7 @@ const Form = () => {
         setLoading(false);
       });
   };
+
   return (
     <div className="w-full">
       <div className="bg-gradient-to-b from-blue-800 to-gray-900 h-96"></div>
