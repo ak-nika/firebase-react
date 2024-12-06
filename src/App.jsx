@@ -1,9 +1,13 @@
+import Form from "./components/Form";
+
 export default function App() {
   return (
     <>
-      <h1 className="text-3xl font-bold underline text-center">
+      <h1 className="text-3xl font-bold text-center my-4">
         Firebase with React
       </h1>
+
+      <Form />
     </>
   );
 }
