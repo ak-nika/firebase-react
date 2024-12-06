@@ -1,4 +1,8 @@
+import { Suspense, lazy } from "react";
 import Form from "./components/Form";
+import Loader from "./components/Loader";
+
+const Images = lazy(() => import("./components/Images"));
 
 export default function App() {
   return (
@@ -8,6 +12,10 @@ export default function App() {
       </h1>
 
       <Form />
+
+      <Suspense fallback={<Loader />}>
+        <Images />
+      </Suspense>
     </>
   );
 }

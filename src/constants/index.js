@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { collection, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -9,4 +10,13 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase
+initializeApp(firebaseConfig);
+
+// Initialize services
+const db = getFirestore();
+
+// Get collection reference
+const colRef = collection(db, "images");
+
+export { db, colRef };
