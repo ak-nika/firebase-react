@@ -1,3 +1,7 @@
+// This component is for editing an image. It fetches the image by id and
+// allows the user to edit the name, author, and description of the image.
+// It also allows the user to upload a new image.
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Loader from "./Loader";
@@ -6,20 +10,22 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../constants";
 
 const EditForm = () => {
-  const { id } = useParams();
-  const [name, setName] = useState("");
-  const [author, setAuthor] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [url, setUrl] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const { id } = useParams(); // Get the id from the URL parameters
+  const [name, setName] = useState(""); // State for the name of the image
+  const [author, setAuthor] = useState(""); // State for the author of the image
+  const [description, setDescription] = useState(""); // State for the description of the image
+  const [loading, setLoading] = useState(true); // State for whether the component is loading or not
+  const [url, setUrl] = useState(null); // State for the URL of the image
+  const [uploading, setUploading] = useState(false); // State for whether the component is uploading or not
 
   useEffect(() => {
     const fetchImage = async () => {
       try {
+        // Get the document from Firestore
         const docRef = doc(db, "images", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
+          // Set the state with the data from the document
           const data = docSnap.data();
           setName(data.name);
           setAuthor(data.author);
@@ -31,7 +37,7 @@ const EditForm = () => {
       } catch (error) {
         console.error("Error fetching image:", error);
       } finally {
-        setLoading(false);
+        setLoading(false); // Set loading to false when the data has been fetched
       }
     };
     fetchImage();
@@ -40,6 +46,7 @@ const EditForm = () => {
   const handleChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Compress the image
       const options = {
         maxSizeMB: 1,
         maxWidthOrHeight: 1920,
@@ -59,10 +66,12 @@ const EditForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Set uploading to true when the form is submitted
     setUploading(true);
     const docRef = doc(db, "images", id);
 
     try {
+      // Update the document in Firestore
       await updateDoc(docRef, {
         name,
         author,
@@ -72,12 +81,14 @@ const EditForm = () => {
     } catch (error) {
       console.error("Error updating document:", error);
     } finally {
+      // Set uploading to false when the document has been updated
       setUploading(false);
       window.location.href = "/";
     }
   };
 
   if (loading) {
+    // If the component is loading, return a loader
     return <Loader />;
   }
 
@@ -87,6 +98,7 @@ const EditForm = () => {
         className="w-full max-w-lg bg-gray-700 p-6 rounded-md"
         onSubmit={handleSubmit}
       >
+        {/* Form fields */}
         <div className="flex items-center gap-4">
           <div className="mb-5 w-1/2">
             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">

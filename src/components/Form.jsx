@@ -4,14 +4,16 @@ import { colRef } from "../constants";
 import imageCompression from "browser-image-compression";
 
 const Form = () => {
+  // State hooks for form data and UI states
   const [url, setUrl] = useState(null);
   const [name, setName] = useState("");
   const [author, setAuthor] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("Please fill all the fields");
   const [loading, setLoading] = useState(false);
-  const errorText = useRef();
+  const errorText = useRef(); // Reference to error text element
 
+  // Handle file input change, compress and set the image URL
   const handleChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -23,7 +25,7 @@ const Form = () => {
       try {
         const compressedFile = await imageCompression(file, options);
         const reader = new FileReader();
-        reader.onload = () => setUrl(reader.result);
+        reader.onload = () => setUrl(reader.result); // Set the URL from the compressed file
         reader.readAsDataURL(compressedFile);
       } catch (error) {
         console.error("Error compressing image:", error);
@@ -31,9 +33,11 @@ const Form = () => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    // Show error if any field is empty
     if (!name || !author || !description || !url) {
       errorText.current.classList.remove("hidden");
       return;
@@ -41,19 +45,20 @@ const Form = () => {
 
     errorText.current.classList.add("hidden");
     setError("Please fill all the fields");
-
-    setLoading(true);
+    setLoading(true); // Set loading state
 
     const data = {
       name,
       author,
       description,
       url,
-      createdAt: serverTimestamp(),
+      createdAt: serverTimestamp(), // Add timestamp
     };
 
+    // Add document to Firestore
     addDoc(colRef, data)
       .then(() => {
+        // Reset form fields on success
         setName("");
         setAuthor("");
         setDescription("");
@@ -65,7 +70,7 @@ const Form = () => {
         errorText.current.classList.remove("hidden");
       })
       .finally(() => {
-        setLoading(false);
+        setLoading(false); // Reset loading state
       });
   };
 

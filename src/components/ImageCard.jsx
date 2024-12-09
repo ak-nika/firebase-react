@@ -1,10 +1,22 @@
+// This component renders a card for an image.
+// It takes props for the image id, name, url, description, and author.
+// It displays the image, name, author, description, and buttons to edit or delete the image.
+// When the delete button is clicked, it prompts the user to confirm deletion.
+// If the user confirms, it calls the useDelete hook to delete the image.
+// If the deletion is successful, it displays a success message.
+// If the deletion fails, it displays an error message.
+
 import React from "react";
 import Swal from "sweetalert2";
 import useDelete from "../hooks/useDelete";
 import { Link } from "react-router-dom";
 
 const ImageCard = ({ id, name, url, description, author }) => {
+  // This function is called when the delete button is clicked.
+  // It prompts the user to confirm deletion, and if the user confirms,
+  // it calls the useDelete hook to delete the image.
   const handleDelete = (imgId) => {
+    // Prompt the user to confirm deletion
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -14,9 +26,11 @@ const ImageCard = ({ id, name, url, description, author }) => {
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
+      // If the user confirms, call the useDelete hook to delete the image
       if (result.isConfirmed) {
         const deleted = await useDelete(imgId);
 
+        // If the deletion is successful, display a success message
         if (deleted) {
           Swal.fire({
             title: "Deleted!",
@@ -24,6 +38,7 @@ const ImageCard = ({ id, name, url, description, author }) => {
             icon: "success",
           });
         } else {
+          // If the deletion fails, display an error message
           Swal.fire({
             icon: "error",
             title: "Oops...",
