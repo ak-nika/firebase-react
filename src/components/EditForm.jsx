@@ -1,8 +1,41 @@
-import { useParams, useState } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import Loader from "./Loader";
+import imageCompression from "browser-image-compression";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "../constants";
 
 const EditForm = () => {
   const { id } = useParams();
+  const [name, setName] = useState("");
+  const [author, setAuthor] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(true);
   const [url, setUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const docRef = doc(db, "images", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setName(data.name);
+          setAuthor(data.author);
+          setDescription(data.description);
+          setUrl(data.url);
+        } else {
+          console.log("No such document!");
+        }
+      } catch (error) {
+        console.error("Error fetching image:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchImage();
+  }, []);
 
   const handleChange = async (event) => {
     const file = event.target.files[0];
@@ -22,9 +55,38 @@ const EditForm = () => {
       }
     }
   };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setUploading(true);
+    const docRef = doc(db, "images", id);
+
+    try {
+      await updateDoc(docRef, {
+        name,
+        author,
+        description,
+        url,
+      });
+    } catch (error) {
+      console.error("Error updating document:", error);
+    } finally {
+      setUploading(false);
+      window.location.href = "/";
+    }
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <div className="flex justify-center items-center h-screen">
-      <form className="w-full max-w-lg bg-gray-700 p-6 rounded-md">
+      <form
+        className="w-full max-w-lg bg-gray-700 p-6 rounded-md"
+        onSubmit={handleSubmit}
+      >
         <div className="flex items-center gap-4">
           <div className="mb-5 w-1/2">
             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -32,35 +94,40 @@ const EditForm = () => {
             </label>
             <input
               type="text"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light outline-none"
               required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
-          e
+
           <div className="mb-5 w-1/2">
             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               New Author
             </label>
             <input
-              type="password"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+              type="text"
+              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light outline-none"
               required
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
             />
           </div>
         </div>
 
         <div className="mb-5">
-          <label
-            for="repeat-password"
-            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >
+          <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
             New Description
           </label>
-          <textarea className="h-40 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"></textarea>
+          <textarea
+            className="h-40 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light outline-none"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          ></textarea>
         </div>
 
-        <div>
-          <label>
+        <div className="flex flex-col items-center justify-center gap-4 w-full">
+          <label className="bg-blue-800 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer">
             Upload New Image
             <input
               type="file"
@@ -70,8 +137,16 @@ const EditForm = () => {
             />
           </label>
 
-          <img src={url} alt="" className="w-3/5 object-contain h-[400px]" />
+          <img src={url} alt="" className="w-full object-contain h-[400px]" />
         </div>
+
+        <button
+          className={`bg-blue-800 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block mx-auto mt-8 ${
+            uploading && "opacity-50 cursor-not-allowed"
+          }`}
+        >
+          {uploading ? "Uploading..." : "Update"}
+        </button>
       </form>
     </div>
   );
